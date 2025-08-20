@@ -6,18 +6,6 @@ function myFunctionExample() {
 }
 
 (()=>{
-/** Short hand utils for objects */
-const objDoProp = (obj, prop, def, enm, mut) => Object.defineProperty(obj, prop, {
-    value: def,
-    writable: mut,
-    enumerable: enm,
-    configurable: mut
-});
-const objDefProp=(obj, prop, def) => objDoProp (obj, prop, def, false, true);
-const objDefEnum=(obj, prop, def) => objDoProp (obj, prop, def, true, true);
-const objFrzProp=(obj, prop, def) => objDoProp (obj, prop, def, false, false);
-const objFrzEnum=(obj, prop, def) => objDoProp (obj, prop, def, true, false);
-
 const clearHeaders = function clearHeaders(headers = {}){
     headers = headers?.headers ?? headers;
     try{
@@ -25,7 +13,11 @@ const clearHeaders = function clearHeaders(headers = {}){
     }catch{
       try{
         if(headers['X-Forwarded-For']){
-          objDefProp(headers,'X-Forwarded-For',undefined);
+          Object.defineProperty(headers,'X-Forwarded-For',{
+            value:undefined,
+            writable:true,
+            configurable:true
+          });
         }
       }catch{}
     }
@@ -38,79 +30,34 @@ const clearHeaders = function clearHeaders(headers = {}){
 * @param {string} body - The response body as a string. 
 * @param {Object} options - Configuration options for the response. * @return {Object} The simulated HTTP response. 
 */
-globalThis.NewHttpResponse = function NewHttpResponse(body, options = {}) {
-    const resProto = {};
-    const res = Object.create(resProto);
-    objDefProp(resProto,'body',String(body));
-    objDefProp(resProto,'headers',options?.headers || {});
-    objDefProp(resProto,'status',options?.status || 200);
-    res.getAllHeaders = function getAllHeaders() {
-        return this.headers;
-    };
-    res.getHeaders = function getHeaders() {
-        const flatHeaders = {};
-        for (const h in res.headers) {
-            flatHeaders[h] = String(res.headers[h]);
-        }
-        return flatHeaders;
-    };
-    objDefProp(resProto,'bodyBlob',Utilities.newBlob([...res.body].map(x=>x.charCodeAt())));
-    res.getContent = function getContent() {
-        return this?.bodyBlob?.getBytes?.();
-    };
-    res.getAs = function getAs(type){
-      return this?.bodyBlob?.getAs?.(type);
-    }
-    res.getBlob = function getBlob(type){
-      return this?.bodyBlob;
-    }
-    res.getContentText = function getContentText(charset) {
-        if (!charset) {
-            return this.body;
-        }
-        return this.bodyBlob.getDataAsString(charset);
-    };
-    res.toString = function toString(){
-      return this.body;
-    };
-    res.getResponseCode = function getResponseCode() {
-        return res.status;
-    };
-    return res;
-};
-
 class HttpResponse {
   constructor(body, options = {}) {
     Object.assign(this,{body,headers:{},status:200,...options});
-    objDefProp(resProto,'body',String(body));
-    objDefProp(resProto,'headers',options?.headers || {});
-    objDefProp(resProto,'status',options?.status || 200);
-    
-    objDefProp(resProto,'bodyBlob',Utilities.newBlob([...res.body].map(x=>x.charCodeAt())));
+    this.bodyBlob = Utilities.newBlob([...this.body??[]].map(x=>x.charCodeAt()));
   }
   getAllHeaders() {
-        return this.headers;
+    return this.headers;
   }
   getHeaders() {
-      return this.headers;
+    return this.headers;
   }
   getContent() {
-      return this.bodyBlob?.getBytes?.();
+    return this.bodyBlob?.getBytes?.();
   }
   getAs(type){
-      return this.bodyBlob?.getAs?.(type);
+    return this.bodyBlob?.getAs?.(type);
   }
   getBlob(type){
-      return this.bodyBlob;
+    return this.bodyBlob;
   }
   getContentText(charset) {
-      return charset ? this.bodyBlob.getDataAsString(charset) : this.body;
+    return charset ? this.bodyBlob.getDataAsString(charset) : this.body;
   }
   toString(){
-      return this.body;
+    return this.body;
   }
   getResponseCode() {
-      return this.status;
+    return this.status;
   }
 };
 
@@ -124,18 +71,6 @@ const defaultOptions = {
   muteHttpExceptions : true,
   escaping : false,
 };
-
-/** 
- * Fetches a URL with the given options. 
- * @param {string} url - The URL to fetch. 
- * @param {Object} options - The options for the fetch operation. 
- * @return {GoogleAppsScript.URL_Fetch.HTTPResponse} The response from the URL fetch. 
- */
-globalThis.UrlFetch = function UrlFetch(url, options = {}) {
-    return UrlFetchApp.fetch(url, {...defaultOptions, ...options});
-};
-
-
 
 /** 
  * Wrapper for UrlFetch that handles exceptions by returning a custom error response.
@@ -154,14 +89,14 @@ globalThis.UrlFetch = function UrlFetch(url, options) {
 };
 
  class HttpRequest{
-    constructor(url, options = {}) {
+  constructor(url, options = {}) {
     const allOptions = {...defaultOptions, ...options};
     try{
       Object.assign(this,{...UrlFetchApp.getRequest(String(url), allOptions),...allOptions});
     }catch{
       Object.assign(this,{...UrlFetchApp.getRequest('https://www.google.com',allOptions),...allOptions,url});
     }
-    clearHeaders(this$;
+    clearHeaders(this);
   }
 };
   
