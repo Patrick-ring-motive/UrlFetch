@@ -5,7 +5,6 @@ function myFunctionExample() {
   console.log(x.getResponseCode(),x.getContentText());
 }
 
-(()=>{
 const clearHeaders = function clearHeaders(headers = {}){
     headers = headers?.headers ?? headers;
     try{
@@ -79,10 +78,20 @@ const defaultOptions = {
  * @return {Object} The response object, either from the fetch or an error response. 
  */
 globalThis.UrlFetch = function UrlFetch(url, options) {
+    const requestOptions = {...defaultOptions, ...options};
     try {
-      return UrlFetchApp.fetch(String(url), {...defaultOptions, ...options});
+      const response = UrlFetchApp.fetch(String(url), requestOptions);
+      const status = response.getResponseCode();
+      if(requestOptions.muteHttpExceptions == false
+        &&(status  >= 400 || status <= 0 || !status)){
+        throw new Error(`Fetch error ${status}`);
+      }
+      return res;
     } catch (e) {
-      return NewHttpResponse(`500 ${e.message}`, {
+      if(requestOptions.muteHttpExceptions == false){
+        throw e;
+      }
+      return new HttpResponse(`500 ${e.message}`, {
         status: 500
       });
     }
@@ -101,7 +110,7 @@ globalThis.UrlFetch = function UrlFetch(url, options) {
 };
   
 const defaultEvent = { 
-  equeryString: '',
+  queryString: '',
   parameter: {},
   parameters: {},
   pathInfo: '',
@@ -121,4 +130,4 @@ class HttpEvent{
   }
 };
 
-})();
+
