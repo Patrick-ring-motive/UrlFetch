@@ -5,113 +5,6 @@ function myFunctionExample() {
   console.log(x.getResponseCode(),x.getContentText());
 }
 
-const contentTypes = {
-    ".aac": "audio/aac",
-    ".abw": "application/x-abiword",
-    ".apng": "image/apng",
-    ".arc": "application/x-freearc",
-    ".avif": "image/avif",
-    ".avi": "video/x-msvideo",
-    ".azw": "application/vnd.amazon.ebook",
-    ".bin": "application/octet-stream",
-    ".bmp": "image/bmp",
-    ".bz": "application/x-bzip",
-    ".bz2": "application/x-bzip2",
-    ".cda": "application/x-cdf",
-    ".cgs": "text/javascript",
-    ".cgsx": "text/javascript",
-    ".cgsw": "text/javascript",
-    ".cjs": "text/javascript",
-    ".cjsx": "text/javascript",
-    ".cjsw": "text/javascript",
-    ".cts": "text/javascript",
-    ".ctsx": "text/javascript",
-    ".ctsw": "text/javascript",
-    ".csh": "application/x-csh",
-    ".css": "text/css",
-    ".scss": "text/css",
-    ".csv": "text/csv",
-    ".doc": "application/msword",
-    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ".eot": "application/vnd.ms-fontobject",
-    ".epub": "application/epub+zip",
-    ".gs": "text/javascript",
-    ".gsx": "text/javascript",
-    ".gsw": "text/javascript",
-    ".gz": "application/gzip",
-    ".gif": "image/gif",
-    ".htm": "text/html",
-    ".html": "text/html",
-    ".ico": "image/vnd.microsoft.icon",
-    ".ics": "text/calendar",
-    ".jar": "application/java-archive",
-    ".jpeg": "image/jpeg",
-    ".jpg": "image/jpeg",
-    ".js": "text/javascript",
-    ".jsx": "text/javascript",
-    ".jsw": "text/javascript",
-    ".json": "application/json",
-    ".jsonld": "application/ld+json",
-    ".mid": "audio/midi, audio/x-midi",
-    ".midi": "audio/midi, audio/x-midi",
-    ".mgs": "text/javascript",
-    ".mgsx": "text/javascript",
-    ".mgsw": "text/javascript",
-    ".mjs": "text/javascript",
-    ".mjsx": "text/javascript",
-    ".mjsw": "text/javascript",
-    ".mts": "text/javascript",
-    ".mtsx": "text/javascript",
-    ".mtsw": "text/javascript",
-    ".mp3": "audio/mpeg",
-    ".mp4": "video/mp4",
-    ".mpeg": "video/mpeg",
-    ".mpkg": "application/vnd.apple.installer+xml",
-    ".odp": "application/vnd.oasis.opendocument.presentation",
-    ".ods": "application/vnd.oasis.opendocument.spreadsheet",
-    ".odt": "application/vnd.oasis.opendocument.text",
-    ".oga": "audio/ogg",
-    ".ogv": "video/ogg",
-    ".ogx": "application/ogg",
-    ".opus": "audio/ogg",
-    ".otf": "font/otf",
-    ".png": "image/png",
-    ".pdf": "application/pdf",
-    ".php": "application/x-httpd-php",
-    ".ppt": "application/vnd.ms-powerpoint",
-    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ".rar": "application/vnd.rar",
-    ".rtf": "application/rtf",
-    ".sh": "application/x-sh",
-    ".svg": "image/svg+xml",
-    ".tar": "application/x-tar",
-    ".tif": "image/tiff",
-    ".tiff": "image/tiff",
-    ".ts": "text/javascript",
-    ".tsx": "text/javascript",
-    ".tsw": "text/javascript",
-    ".ttf": "font/ttf",
-    ".txt": "text/plain",
-    ".vsd": "application/vnd.visio",
-    ".wav": "audio/wav",
-    ".weba": "audio/webm",
-    ".webm": "video/webm",
-    ".webp": "image/webp",
-    ".woff": "font/woff",
-    ".woff2": "font/woff2",
-    ".xhtml": "application/xhtml+xml",
-    ".xjs": "text/javascript",
-    ".xls": "application/vnd.ms-excel",
-    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ".xml": "application/xml",
-    ".xul": "application/vnd.mozilla.xul+xml",
-    ".zip": "application/zip",
-    ".3gp": "video/3gpp",
-    ".3g2": "video/3gpp2",
-    ".7z": "application/x-7z-compressed"
-};
-
-
 
 /** Short hand utils for objects */
 const objDoProp = (obj, prop, def, enm, mut) => Object.defineProperty(obj, prop, {
@@ -206,18 +99,6 @@ globalThis.UrlFetch = function UrlFetch(url, options = {}) {
     return UrlFetchApp.fetch(url, {...defaultOptions, ...options});
 };
 
-globalThis.UrlSheetFetch = function UrlSheetFetch(url, options = {}){
-  const end = String(url).split('?')[0].split('#')[0].split('.').pop();
-  options.headers = options.headers ?? {};
-  options.headers['content-type'] = 'text/html';
-  if(contentTypes[end]){
-    options.headers['content-type'] = contentTypes[end];
-  }
-  const response = sheetFetch(url);
-  if(response == '#N/A'){throw response;}
-  const res = NewHttpResponse(sheetFetch(response),options);
-  return res;
-};
 
 
 /** 
@@ -226,26 +107,13 @@ globalThis.UrlSheetFetch = function UrlSheetFetch(url, options = {}){
  * @param {Object} options - The options for the fetch operation. 
  * @return {Object} The response object, either from the fetch or an error response. 
  */
-globalThis.zUrlFetch = function zUrlFetch(url, options) {
+globalThis.UrlFetch = function UrlFetch(url, options) {
     try {
-      return UrlFetch(String(url), options);
+      return UrlFetchApp.fetch(String(url), {...defaultOptions, ...options});
     } catch (e) {
-      try {
-        return UrlFetchAll(zNewHttpRequest(String(url), options))[0];
-      } catch {
-        try {
-            return UrlSheetFetch(String(url), options);
-        } catch {
-            const match = fuzzyMatch(e.message);
-            let code = 569;
-            if (match[2] >= 2) {
-              code = +match[0] || 569;
-            }
-            return NewHttpResponse(`${code} ${e.message}`, {
+            return NewHttpResponse(`500 ${e.message}`, {
                 status: code
             });
-        }
-      }
     }
 };
 
