@@ -86,7 +86,7 @@ globalThis.UrlFetch = function UrlFetch(url, options) {
         &&(status  >= 400 || status <= 0 || !status)){
         throw new Error(`Fetch error ${status}`);
       }
-      return res;
+      return response;
     } catch (e) {
       if(requestOptions.muteHttpExceptions == false){
         throw e;
