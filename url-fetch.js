@@ -79,6 +79,42 @@ globalThis.NewHttpResponse = function NewHttpResponse(body, options = {}) {
     return res;
 };
 
+class HttpResponse {
+  constructor(body, options = {}) {
+    Object.assign(this,{body,headers:{},status:200,...options});
+    objDefProp(resProto,'body',String(body));
+    objDefProp(resProto,'headers',options?.headers || {});
+    objDefProp(resProto,'status',options?.status || 200);
+    
+    objDefProp(resProto,'bodyBlob',Utilities.newBlob([...res.body].map(x=>x.charCodeAt())));
+  }
+  getAllHeaders() {
+        return this.headers;
+  }
+  getHeaders() {
+      return this.headers;
+  }
+  getContent() {
+      return this.bodyBlob?.getBytes?.();
+  }
+  getAs(type){
+      return this.bodyBlob?.getAs?.(type);
+  }
+  getBlob(type){
+      return this.bodyBlob;
+  }
+  getContentText(charset) {
+      return charset ? this.bodyBlob.getDataAsString(charset) : this.body;
+  }
+  toString(){
+      return this.body;
+  }
+  getResponseCode() {
+      return this.status;
+  }
+};
+
+
 /** 
  * Default options for http requests. 
  * Different from what google picks for defaults 
@@ -115,26 +151,6 @@ globalThis.UrlFetch = function UrlFetch(url, options) {
         status: 500
       });
     }
-};
-
-
-globalThis.NewHttpRequest = function NewHttpRequest(url, options = {}) {
-    const allOptions = {...defaultOptions, ...options};
-    return Object.assign(UrlFetchApp.getRequest(url, allOptions),allOptions);
-};
-
-
-globalThis.zNewHttpRequest = function zNewHttpRequest(url, options = {}) {
-    const allOptions = {...defaultOptions, ...options};
-    let req = {};
-    try{
-      req = Object.assign(UrlFetchApp.getRequest(String(url), allOptions),allOptions);
-    }catch(e){
-      req = Object.assign(UrlFetchApp.getRequest('https://www.google.com', allOptions),allOptions); 
-      req.url = url;
-    }
-    clearHeaders(req);
-  return req;
 };
 
  class HttpRequest{
