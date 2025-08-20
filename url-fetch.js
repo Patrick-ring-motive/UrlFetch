@@ -1,11 +1,11 @@
 
 function myFunctionExample() {
   let myURL = 'poophttps://www.google.com';
-  let x =  zUrlFetch(myURL);
+  let x =  UrlFetch(myURL);
   console.log(x.getResponseCode(),x.getContentText());
 }
 
-
+(()=>{
 /** Short hand utils for objects */
 const objDoProp = (obj, prop, def, enm, mut) => Object.defineProperty(obj, prop, {
     value: def,
@@ -111,9 +111,9 @@ globalThis.UrlFetch = function UrlFetch(url, options) {
     try {
       return UrlFetchApp.fetch(String(url), {...defaultOptions, ...options});
     } catch (e) {
-            return NewHttpResponse(`500 ${e.message}`, {
-                status: code
-            });
+      return NewHttpResponse(`500 ${e.message}`, {
+        status: 500
+      });
     }
 };
 
@@ -137,30 +137,18 @@ globalThis.zNewHttpRequest = function zNewHttpRequest(url, options = {}) {
   return req;
 };
 
-globalThis.UrlFetchAll = function UrlFetchAll(requests){
- return UrlFetchApp.fetchAll(requests.map(x=>{
-    const req = NewHttpRequest(x.url,x);
-    clearHeaders(req);
-    return req;
-  }));
-};
-
-globalThis.zUrlFetchAllSync = function zUrlFetchAllSync(requests = []){
-  return requests.map(x=>{
-    const req = zNewHttpRequest(x.url,x);
-    clearHeaders(req);
-    return zUrlFetch(req.url,req);
-  });
-};
-
-globalThis.zUrlFetchAll = function zUrlFetchAll(requests){
-  try{
-    return UrlFetchAll(requests);
-  }catch(e){
-    return zUrlFetchAllSync(requests);
+ class HttpRequest{
+    constructor(url, options = {}) {
+    const allOptions = {...defaultOptions, ...options};
+    try{
+      Object.assign(this,{...UrlFetchApp.getRequest(String(url), allOptions),...allOptions});
+    }catch{
+      Object.assign(this,{...UrlFetchApp.getRequest('https://www.google.com',allOptions),...allOptions,url});
+    }
+    clearHeaders(this$;
   }
 };
-
+  
 const defaultEvent = { 
   equeryString: '',
   parameter: {},
@@ -176,7 +164,10 @@ const defaultEvent = {
   contentLength: 0 
 };
 
-globalThis.HttpEvent = function HttpEvent(e = {}){
-  return {...defaultEvent, ...e};
+class HttpEvent{
+  constructor(e = {}){
+    Object.assign(this,{...defaultEvent, ...e});
+  }
 };
 
+})();
